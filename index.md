@@ -11,6 +11,6 @@ list_title: 最新文章
 <div class="sdv-empty">
   <p class="sdv-empty-title">还没有文章</p>
   <p>第一篇文章写完就会出现在这里。</p>
-  <p>可以先看看 <a href="/about/">关于我</a>,或者订阅 <a href="/feed.xml">RSS</a>。</p>
+  <p>可以先看看 <a href="/about/">关于我</a>，或者订阅 <a href="/feed.xml">RSS</a>。</p>
 </div>
 {% endif %}

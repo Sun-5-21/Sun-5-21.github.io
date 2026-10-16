@@ -1,14 +1,14 @@
 # ============================================================
 #  站点配置 —— Jekyll + GitHub Pages
 #  仓库: git@github.com:Sun-5-21/Sun-5-21.github.io.git
-#  仓库名是 <用户名>.github.io(用户主页站点),
-#  所以 baseurl 必须留空,站点根路径就是 https://sun-5-21.github.io
+#  仓库名是 <用户名>.github.io(用户主页站点)，
+#  所以 baseurl 必须留空，站点根路径就是 https://sun-5-21.github.io
 # ============================================================
 
 # ---------- 基本信息(改成你自己的) ----------
 title: Sun 的博客
 author: Sun
-email:                    # 填上邮箱会显示在页脚,留空则不显示
+email:                    # 填上邮箱会显示在页脚，留空则不显示
 description: >-
   记录技术、阅读与生活的地方。
 
@@ -25,7 +25,7 @@ permalink: /:year/:month/:day/:title/
 # ---------- 主题与插件 ----------
 theme: minima
 
-# 以下插件都在 GitHub Pages 白名单内,可以放心使用
+# 以下插件都在 GitHub Pages 白名单内，可以放心使用
 plugins:
   - jekyll-feed
   - jekyll-seo-tag
