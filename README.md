@@ -1,11 +1,11 @@
 # Sun 的博客
 
-基于 **Jekyll + minima 主题** 的个人博客,托管在 **GitHub Pages** 上。
-主题被改成了**星露谷(Stardew Valley)风格**:木质顶栏、羊皮纸对话框、像素图标。
-全部内容都是仓库里的 Markdown 文件,写完 `git push` 就会自动发布。
+基于 **Jekyll + minima 主题** 的个人博客，托管在 **GitHub Pages** 上。
+主题被改成了**星露谷(Stardew Valley)风格**：木质顶栏、羊皮纸对话框、像素图标。
+全部内容都是仓库里的 Markdown 文件，写完 `git push` 就会自动发布。
 
-- 站点地址:<https://sun-5-21.github.io>
-- 仓库地址:<https://github.com/Sun-5-21/Sun-5-21.github.io>
+- 站点地址：<https://sun-5-21.github.io>
+- 仓库地址：<https://github.com/Sun-5-21/Sun-5-21.github.io>
 
 ---
 
@@ -34,17 +34,17 @@
 
 ### 1. 新建文件
 
-在 `_posts/` 下新建文件,**文件名格式固定**:
+在 `_posts/` 下新建文件，**文件名格式固定**：
 
 ```text
 _posts/年-月-日-英文短标题.md
 ```
 
-例如:`_posts/2026-10-20-my-first-post.md`
+例如：`_posts/2026-10-20-my-first-post.md`
 
 ### 2. 填写 front matter
 
-文件开头 `---` 之间的部分叫 front matter,是文章的元信息:
+文件开头 `---` 之间的部分叫 front matter，是文章的元信息：
 
 ```yaml
 ---
@@ -58,7 +58,7 @@ tags: [标签一, 标签二]
 
 ### 3. 正文
 
-用 Markdown 写就行,Jekyll 会自动套用文章模板、生成目录和 RSS。
+用 Markdown 写就行，Jekyll 会自动套用文章模板、生成目录和 RSS。
 
 ### 4. 发布
 
@@ -68,7 +68,7 @@ git commit -m "post: 新增一篇文章"
 git push
 ```
 
-推上去之后 GitHub 会自动构建,通常 1~2 分钟生效。
+推上去之后 GitHub 会自动构建，通常 1~2 分钟生效。
 构建进度和报错在仓库的 **Actions** 标签页查看。
 
 ---
@@ -77,9 +77,9 @@ git push
 
 | 坑 | 现象 | 解法 |
 | --- | --- | --- |
-| **日期是未来时间** | 文章凭空消失,且不报错 | front matter 的 `date` 和文件名日期都要早于当前时间 |
-| **`title` 含冒号没加引号** | 构建失败,报 YAML 错误 | 标题一律用双引号包起来,例如 `title: "Hello: World"` |
-| **正文写了连续两个左花括号** | 内容变成空白或构建报错 | 那是 Liquid 模板语法,要原样展示请用 `{% raw %}` … `{% endraw %}` 包住 |
+| **日期是未来时间** | 文章凭空消失，且不报错 | front matter 的 `date` 和文件名日期都要早于当前时间 |
+| **`title` 含冒号没加引号** | 构建失败，报 YAML 错误 | 标题一律用双引号包起来，例如 `title: "Hello: World"` |
+| **正文写了连续两个左花括号** | 内容变成空白或构建报错 | 那是 Liquid 模板语法，要原样展示请用 `{% raw %}` … `{% endraw %}` 包住 |
 
 ---
 
@@ -94,37 +94,37 @@ bundle exec jekyll serve
 
 然后打开 <http://127.0.0.1:4000>。
 
-常用参数:
+常用参数：
 
 ```bash
 bundle exec jekyll serve --drafts     # 同时预览 _drafts/ 里的草稿
 bundle exec jekyll serve --livereload # 改完自动刷新浏览器
 ```
 
-> 本机当前**没有安装 Ruby**,所以上面的命令暂时跑不了。
+> 本机当前**没有安装 Ruby**，所以上面的命令暂时跑不了。
 > 只写文章的话不需要它 —— 直接 push,GitHub 会帮你构建。
 
 ---
 
 ## 推送前自检(推荐)
 
-仓库里带了一个自检脚本,推送前跑一下可以提前抓到 Jekyll 最容易出问题的地方,
-**不需要安装 Ruby**,只需要 Python:
+仓库里带了一个自检脚本，推送前跑一下可以提前抓到 Jekyll 最容易出问题的地方，
+**不需要安装 Ruby**，只需要 Python:
 
 ```bash
 pip install pyyaml
 python tools/check_site.py
 ```
 
-它会检查:
+它会检查：
 
-- `_config.yml` 能否解析,`baseurl`、插件白名单、主题皮肤是否正确
+- `_config.yml` 能否解析，`baseurl`、插件白名单、主题皮肤是否正确
 - 所有页面的 front matter 是不是合法 YAML
-- 文章文件名、`layout`、`title`、日期是否规范,**日期是不是落在了未来**
+- 文章文件名、`layout`、`title`、日期是否规范，**日期是不是落在了未来**
 - 导航栏 `header_pages` 引用的页面是否存在
 - 正文里有没有残留会被 Liquid 吃掉的花括号
 
-没有错误时退出码是 `0`,可以放心 `git push`。
+没有错误时退出码是 `0`，可以放心 `git push`。
 
 ---
 
@@ -136,12 +136,12 @@ python tools/check_site.py
 
 ### 改导航栏
 
-`_config.yml` 里的 `header_pages`,填文件名即可,顺序就是显示顺序。
+`_config.yml` 里的 `header_pages`，填文件名即可，顺序就是显示顺序。
 导航文字取的是对应页面的 `title`。
 
 ### 改主题样式(星露谷风格在这里)
 
-所有样式都在 **`assets/main.scss`**,结构是:
+所有样式都在 **`assets/main.scss`**，结构是：
 
 ```scss
 ---
@@ -151,7 +151,7 @@ python tools/check_site.py
 /* ↓ 下面全是纯 CSS 的星露谷覆盖,按段落分好了注释 */
 ```
 
-常用的配色,改的时候全局替换即可:
+常用的配色，改的时候全局替换即可：
 
 | 用途 | 色值 |
 | :--- | :--- |
@@ -163,39 +163,39 @@ python tools/check_site.py
 | 草绿(强调线、左边框) | `#6fa84a` |
 | 金色(引用框、高亮) | `#e8b53d` |
 
-> 因为覆盖写得很彻底,`_config.yml` 里的 `minima.skin` 影响已经很有限了,
+> 因为覆盖写得很彻底，`_config.yml` 里的 `minima.skin` 影响已经很有限了，
 > 想换配色直接改上面的色值更靠谱。
 
 ### 像素图标
 
-`assets/images/` 下的三个 SVG 是整个主题里唯一的图片资源,合计不到 4 KB:
+`assets/images/` 下的三个 SVG 是整个主题里唯一的图片资源，合计不到 4 KB:
 
 - `leaf.svg` —— 正文二级标题前的小苗
 - `star.svg` —— 首页「最新文章」前的星星
 - `heart.svg` —— 页脚的小红心
 
-它们是用 ASCII 像素画生成的,想换成别的图案,直接编辑 SVG 里的 `<rect>`
+它们是用 ASCII 像素画生成的，想换成别的图案，直接编辑 SVG 里的 `<rect>`
 或者重新生成一份即可(每个 `<rect>` 就是一行连续的像素)。
 
 ### 加社交链接
 
-编辑 `_config.yml` 里的 `minima.social_links`,支持 `github`、`twitter`、`linkedin`、
+编辑 `_config.yml` 里的 `minima.social_links`，支持 `github`、`twitter`、`linkedin`、
 `stackoverflow`、`email` 等。
 
 ---
 
 ## 部署设置
 
-仓库的 **Settings → Pages** 需要保持如下配置:
+仓库的 **Settings → Pages** 需要保持如下配置：
 
 - **Source**: `Deploy from a branch`
 - **Branch**: `main` / `(root)`
 
-因为这是 `<用户名>.github.io` 仓库,发布出来就是站点根目录,
+因为这是 `<用户名>.github.io` 仓库，发布出来就是站点根目录，
 所以 `_config.yml` 里的 `baseurl` **必须为空字符串**。
 
 ---
 
 ## 许可
 
-文章内容版权归作者所有,代码部分可随意取用。
+文章内容版权归作者所有，代码部分可随意取用。
