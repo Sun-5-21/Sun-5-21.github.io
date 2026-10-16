@@ -1,3 +1,73 @@
-theme: jekyll-theme-minimal
-title: Octocat's homepage
-description: Bookmark this to keep an eye on my project updates!
+# ============================================================
+#  站点配置 —— Jekyll + GitHub Pages
+#  仓库: git@github.com:Sun-5-21/Sun-5-21.github.io.git
+#  仓库名是 <用户名>.github.io(用户主页站点),
+#  所以 baseurl 必须留空,站点根路径就是 https://sun-5-21.github.io
+# ============================================================
+
+# ---------- 基本信息(改成你自己的) ----------
+title: Sun 的博客
+author: Sun
+email:                    # 填上邮箱会显示在页脚,留空则不显示
+description: >-
+  记录技术、阅读与生活的地方。
+
+# ---------- 站点地址 ----------
+url: "https://sun-5-21.github.io"
+baseurl: ""
+
+lang: zh-CN
+timezone: Asia/Shanghai
+
+# 文章永久链接格式:/2026/10/16/hello-world/
+permalink: /:year/:month/:day/:title/
+
+# ---------- 主题与插件 ----------
+theme: minima
+
+# 以下插件都在 GitHub Pages 白名单内,可以放心使用
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
+# ---------- minima 主题专属配置 ----------
+minima:
+  # 皮肤可选:classic / dark / solarized / solarized-dark / solarized-light / auto
+  skin: classic
+  date_format: "%Y-%m-%d"
+  social_links:
+    - platform: github
+      user_url: "https://github.com/Sun-5-21"
+    # 想加别的就取消注释并改成自己的地址:
+    # - platform: twitter
+    #   user_url: "https://twitter.com/yourname"
+    # - platform: email
+    #   user_url: "you@example.com"
+
+# 兼容老版本 minima 的写法
+github_username: Sun-5-21
+
+# ---------- 顶部导航栏(顺序即显示顺序) ----------
+header_pages:
+  - about.md
+  - archive.html
+
+# 首页显示文章摘要而不是全文
+show_excerpts: true
+
+# ---------- Markdown / 代码高亮 ----------
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+  hard_wrap: false
+
+# ---------- 不参与构建的文件 ----------
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+  - tools
+  - node_modules
+  - vendor
+  - .bundle

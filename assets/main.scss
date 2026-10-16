@@ -1,0 +1,173 @@
+---
+# 这个空 front matter 不能删,它告诉 Jekyll 需要编译这个 SCSS 文件
+---
+
+/* ===== 在引入 minima 之前覆盖它的 Sass 变量 ===== */
+$base-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+  "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", "Helvetica Neue",
+  Helvetica, Arial, sans-serif;
+$content-width: 860px;
+$spacing-unit: 32px;
+
+@import "minima";
+
+/* ===== 引入之后再写自定义样式 ===== */
+
+/* ---- 中文正文排版 ---- */
+.post-content,
+.page-content {
+  line-height: 1.85;
+  letter-spacing: 0.01em;
+}
+
+.post-content p,
+.page-content p {
+  margin-bottom: 1.15em;
+}
+
+.post-content h2 {
+  margin-top: 2em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.post-content h3 {
+  margin-top: 1.6em;
+}
+
+/* 中文行内代码用等宽字体更好看 */
+code,
+pre,
+kbd,
+samp {
+  font-family: "JetBrains Mono", "Cascadia Code", Consolas, Monaco,
+    "Courier New", monospace;
+  font-size: 0.9em;
+}
+
+/* ---- 代码块 ---- */
+.highlight,
+pre.highlight {
+  border-radius: 8px;
+  padding: 14px 16px;
+  background-color: #f6f8fa;
+}
+
+div.highlighter-rouge {
+  margin-bottom: 1.2em;
+}
+
+/* ---- 引用块 ---- */
+blockquote {
+  border-left: 4px solid #2a7ae2;
+  background: #f7f9fc;
+  border-radius: 0 6px 6px 0;
+  padding: 10px 18px;
+  color: #4a5568;
+  font-style: normal;
+}
+
+blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+/* ---- 表格 ---- */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 1.2em;
+  font-size: 0.94em;
+}
+
+table th,
+table td {
+  border: 1px solid #e3e6ea;
+  padding: 8px 12px;
+}
+
+table th {
+  background: #f6f8fa;
+}
+
+table tr:nth-child(even) td {
+  background: #fbfcfd;
+}
+
+/* ---- 顶栏 ---- */
+.site-header {
+  border-top: 5px solid #2a7ae2;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.site-title,
+.site-title:visited {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* ---- 首页文章列表 ---- */
+.post-list > li {
+  margin-bottom: 1.8em;
+  padding-bottom: 1.2em;
+  border-bottom: 1px dashed #e8e8e8;
+}
+
+.post-list > li:last-child {
+  border-bottom: none;
+}
+
+.post-list h3 {
+  margin-bottom: 0.25em;
+}
+
+.post-list h3 a {
+  text-decoration: none;
+}
+
+.post-list h3 a:hover {
+  text-decoration: underline;
+}
+
+/* ---- 归档页 ---- */
+.archive-list {
+  list-style: none;
+  margin-left: 0;
+  padding-left: 0;
+}
+
+.archive-list li {
+  display: flex;
+  gap: 14px;
+  align-items: baseline;
+  padding: 6px 0;
+  border-bottom: 1px dashed #ececec;
+}
+
+.archive-list time {
+  flex: 0 0 auto;
+  color: #828282;
+  font-size: 0.85em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- 页脚 ---- */
+.site-footer {
+  color: #828282;
+  font-size: 0.88em;
+}
+
+/* ---- 图片 + 移动端 ---- */
+.post-content img {
+  border-radius: 8px;
+}
+
+@media screen and (max-width: 600px) {
+  .post-content h2 {
+    margin-top: 1.5em;
+  }
+
+  .archive-list li {
+    flex-direction: column;
+    gap: 2px;
+  }
+}
