@@ -87,11 +87,12 @@ if skin and skin not in skins:
     errors.append("minima.skin 取值非法: %r(可选 %s)" % (skin, "/".join(sorted(skins))))
 
 # ------------------------------------------------- 2. 遍历页面 + front matter
-skip_dirs = {".git", "_site", "node_modules", ".jekyll-cache", "tools", "vendor", ".bundle"}
+skip_dirs = {"_site", "node_modules", "tools", "vendor"}
 pages, posts = [], []
 
 for dirpath, dirnames, filenames in os.walk(ROOT):
-    dirnames[:] = [d for d in dirnames if d not in skip_dirs]
+    # 跳过以点开头的目录(.git / .preview / .bundle …)
+    dirnames[:] = [d for d in dirnames if d not in skip_dirs and not d.startswith(".")]
     for filename in filenames:
         if not filename.endswith((".md", ".markdown", ".html")):
             continue

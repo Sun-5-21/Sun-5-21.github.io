@@ -1,6 +1,7 @@
 # Sun 的博客
 
 基于 **Jekyll + minima 主题** 的个人博客,托管在 **GitHub Pages** 上。
+主题被改成了**星露谷(Stardew Valley)风格**:木质顶栏、羊皮纸对话框、像素图标。
 全部内容都是仓库里的 Markdown 文件,写完 `git push` 就会自动发布。
 
 - 站点地址:<https://sun-5-21.github.io>
@@ -14,13 +15,14 @@
 .
 ├── _config.yml                  # 全站配置(标题、作者、导航、插件…)
 ├── Gemfile                      # 本地预览用的依赖
-├── index.md                     # 首页(文章列表)
-├── about.md                     # 关于页
+├── index.md                     # 首页(文章列表 / 空状态提示)
+├── about.md                     # 关于我
 ├── archive.html                 # 归档页(按年份分组)
 ├── 404.html                     # 404 页面
 ├── assets/
-│   └── main.scss                # 自定义样式
-├── _posts/                      # ✅ 所有文章放这里
+│   ├── main.scss                # ⭐ 星露谷主题的全部样式
+│   └── images/                  # 像素图标(leaf / heart / star)
+├── _posts/                      # ✅ 所有文章放这里(目前是空的)
 ├── tools/
 │   └── check_site.py            # 自检脚本(不会发布到站点)
 └── README.md                    # 本文件(不会发布到站点)
@@ -132,22 +134,50 @@ python tools/check_site.py
 
 编辑 `_config.yml` 顶部的 `title`、`author`、`description`、`email`。
 
-### 换配色主题
-
-编辑 `_config.yml` 里的 `minima.skin`,可选:
-
-`classic`(默认)、`dark`、`solarized`、`solarized-dark`、`solarized-light`、`auto`
-
 ### 改导航栏
 
 `_config.yml` 里的 `header_pages`,填文件名即可,顺序就是显示顺序。
+导航文字取的是对应页面的 `title`。
 
-### 改样式
+### 改主题样式(星露谷风格在这里)
 
-`assets/main.scss` 里 `@import "minima";` **之后**的部分是自定义 CSS,
-随便改;想覆盖配色变量则要写在 `@import` **之前**。
+所有样式都在 **`assets/main.scss`**,结构是:
 
-### 换图标 / 加社交链接
+```scss
+---
+---
+@import "minima";     /* 主题基线,别动 */
+
+/* ↓ 下面全是纯 CSS 的星露谷覆盖,按段落分好了注释 */
+```
+
+常用的配色,改的时候全局替换即可:
+
+| 用途 | 色值 |
+| :--- | :--- |
+| 深木色(边框、页脚描边) | `#3b2412` |
+| 木色(顶栏、页脚) | `#8b5e34` |
+| 浅木色(卡片描边) | `#c9a86f` |
+| 羊皮纸(对话框底色) | `#fbf0d6` |
+| 米白(卡片、内圈描边) | `#fdf7e6` |
+| 草绿(强调线、左边框) | `#6fa84a` |
+| 金色(引用框、高亮) | `#e8b53d` |
+
+> 因为覆盖写得很彻底,`_config.yml` 里的 `minima.skin` 影响已经很有限了,
+> 想换配色直接改上面的色值更靠谱。
+
+### 像素图标
+
+`assets/images/` 下的三个 SVG 是整个主题里唯一的图片资源,合计不到 4 KB:
+
+- `leaf.svg` —— 正文二级标题前的小苗
+- `star.svg` —— 首页「最新文章」前的星星
+- `heart.svg` —— 页脚的小红心
+
+它们是用 ASCII 像素画生成的,想换成别的图案,直接编辑 SVG 里的 `<rect>`
+或者重新生成一份即可(每个 `<rect>` 就是一行连续的像素)。
+
+### 加社交链接
 
 编辑 `_config.yml` 里的 `minima.social_links`,支持 `github`、`twitter`、`linkedin`、
 `stackoverflow`、`email` 等。

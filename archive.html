@@ -4,6 +4,7 @@ title: 归档
 permalink: /archive/
 ---
 
+{%- if site.posts.size > 0 -%}
 <p>目前共有 {{ site.posts | size }} 篇文章。</p>
 
 {%- assign posts_by_year = site.posts | group_by_exp: "post", "post.date | date: '%Y'" -%}
@@ -17,4 +18,12 @@ permalink: /archive/
     </li>
     {%- endfor %}
   </ul>
-{%- endfor %}
+{%- endfor -%}
+
+{%- else -%}
+<div class="sdv-empty">
+  <p class="sdv-empty-title">这里也是空的</p>
+  <p>一篇文章都没有。以后所有文章会按年份列在这一页。</p>
+  <p>先去 <a href="{{ '/' | relative_url }}">首页</a> 看看吧。</p>
+</div>
+{%- endif -%}

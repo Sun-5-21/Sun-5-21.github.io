@@ -9,6 +9,9 @@ Gemfile.lock
 .bundle/
 vendor/
 
+# 本地预览(截图、临时脚手架)
+.preview/
+
 # 编辑器 / 系统
 .DS_Store
 Thumbs.db
