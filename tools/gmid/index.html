@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>gm/Id · 器件查表工作台</title><link rel="stylesheet" href="style.css"></head>
+<body>
+<header><div class="brand"><span class="logo">gₘ</span><div><strong>DEVICE ATLAS</strong><small>晶体管 · gm/Id 设计工作台</small></div></div><div class="header-actions"><span class="badge"><i></i> 离线查表</span><label class="button secondary">导入缓存 JSON<input id="import" type="file" accept=".json" hidden></label></div></header>
+<main>
+<aside>
+<div class="section-title"><span>01</span> 器件与工艺</div>
+<label>工艺库<select id="process"></select></label>
+<label>器件类型<select id="device"></select></label>
+<label>沟道长度 L <em>µm</em><select id="l_um"></select></label>
+<label>器件宽度 W <em>µm · 缓存实际尺寸</em><select id="w_um"></select></label>
+<div class="section-title spaced"><span>02</span> 偏置条件</div>
+<label>漏源电压 |VDS| <em>V</em><select id="vds_abs_v"></select></label>
+<label>反向体偏置 <em>V</em><select id="body_reverse_v"></select></label>
+<div class="pair"><label>工艺角<select id="corner"></select></label><label>温度 <em>°C</em><select id="temperature_c"></select></label></div>
+<div class="side-note">NMOS：体电压低于源极<br>PMOS：体电压高于源极<br>页面只显示缓存中存在的条件。</div>
+<div class="source"><b>数据来源</b><p id="source">尚未加载数据</p><small id="counts"></small></div>
+</aside>
+<section class="workspace">
+<div class="page-heading"><div><p class="eyebrow">CHARACTERIZE ONCE. EXPLORE OFFLINE.</p><h1>从器件特性，到设计工作点。</h1><p class="muted">选择条件、比较曲线，再用一个输入找到所需参数。</p></div><span id="model-tag" class="model-tag">等待数据</span></div>
+<div id="notice" role="status" aria-live="polite"></div>
+<article class="chart-card">
+<div class="chart-head"><div><h2 id="plot-title">ID/W vs gm/Id</h2><p id="conditions" class="muted"></p></div><button id="export-svg" class="button secondary">导出 SVG</button></div>
+<div class="toolbar"><label>纵轴<select id="metric"></select></label><label>横轴<select id="xmetric"><option value="gmid">gm/Id [1/V]</option><option value="vgs_abs_v">|VGS| [V]</option><option value="id_w">ID/W [µA/µm]</option></select></label><label class="check"><input id="compare" type="checkbox"> 对比所有 L</label><label class="check"><input id="log" type="checkbox" checked> 对数纵轴</label></div>
+<div id="chart" class="chart" aria-label="器件特性曲线"></div><div id="legend" class="legend"></div>
+<div class="chart-foot"><span id="hover">移动到曲线上查看扫描点</span><span>实线：Spectre 扫描 · 圆点：查询工作点</span></div>
+</article>
+<article class="lookup-card"><div class="lookup-heading"><div><p class="eyebrow">OPERATING POINT LOOKUP</p><h2>快速查表</h2></div><span class="muted">固定当前 L 与偏置条件</span></div>
+<form id="lookup"><label>已知参数<select id="query-key"><option value="gmid">gm/Id [1/V]</option><option value="id_w">ID/W [µA/µm]</option><option value="vgs_abs_v">|VGS| [V]</option></select></label><label>输入数值<input id="query-value" type="number" step="any" value="15" required></label><button type="submit" class="button primary">查找工作点 <span>↗</span></button><button type="button" id="export-csv" class="button secondary">导出当前曲线</button></form>
+<p id="query-status" role="status" aria-live="polite" class="muted">输入数值后查询，支持扫描范围内的线性插值。</p><div id="readouts"></div>
+</article>
+<details><summary>参数定义与使用说明</summary><p>gm/Id = |gm / ids|；ID/W = |ids| / W；ro = 1/gds；本征增益 = |gm|/gds；fT 估算 = |gm|/(2π Cgg)，不是 AC 测得的单位电流增益频率。显示参数对应缓存中的实际 W，不自动缩放宽度。</p><p>Cgs、Cgd、Cds、Cgg 为 Spectre 工作点输出的原始带符号电容矩阵项，保留符号；它们不是互易的独立二端电容。Cds 不等于 Cjd。对数轴会略去零值、负值和缺失值；电容图默认使用线性轴。</p><p>查表只在相同条件下的相邻 VGS 点间插值，不跨工艺角或偏置插值，也不外推。非单调曲线返回多个解。扫描包含非饱和区，请结合 region 与 VDSAT 判断设计工作区。</p></details>
+<footer>本地计算 · 本地缓存 · 无在线仿真依赖 <span id="date"></span></footer>
+</section></main>
+<script src="data/dataset.js"></script><script src="core.js"></script><script src="app.js"></script>
+</body></html>
+
