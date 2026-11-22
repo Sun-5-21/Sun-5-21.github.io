@@ -126,11 +126,33 @@ function query(e){
   if(e)e.preventDefault();if(!current)return;
   const raw=$('query-value').value,target=raw.trim()===''?NaN:Number(raw);
   $('readouts').replaceChildren();solutions=[];
+  const targetId=Number($('target-id').value);
+  if(!GmidCore.finite(targetId)||targetId<=0){$('query-status').textContent='目标 |ID| 必须大于 0 µA。';draw();return;}
+
   try{solutions=GmidCore.lookup(current.rows,$('query-key').value,target);}catch(err){$('query-status').textContent=err.message;draw();return;}
   if(!solutions.length){const [min,max]=GmidCore.extent(current.rows,r=>r[$('query-key').value]);$('query-status').textContent=min!==null?`无可用交点；有效扫描范围 ${fmt(min)}–${fmt(max)}。未执行外推。`:'此参数没有有效扫描值。';draw();return;}
   $('query-status').textContent=`找到 ${solutions.length} 个工作点${solutions.length>1?'；曲线非单调，请根据 VGS 选择工作点':''}。插值结果是估算，精确设计请在目标偏置复核。`;
   solutions.forEach((r,i)=>{
     const title=document.createElement('p');title.className='solution-title';title.textContent=`工作点 ${i+1} · ${r.interpolated?'相邻扫描点线性插值':'原始扫描点'} · |VGS| ${fmt(r.vgs_abs_v)} V`;$('readouts').append(title);
+    const target=document.createElement('div');target.className='values';
+    const sized=GmidCore.sizeForCurrent(r,current.conditions.w_um,targetId*1e-6);
+    if(sized){
+      const heading=document.createElement('p');heading.className='solution-title';
+      heading.textContent='目标电流下的宽度缩放估算 · W = ID / (ID/W)，gm = (gm/ID) × ID。实际尺寸需重新仿真确认。';
+      $('readouts').append(heading);
+      const fields=[['目标 |ID|',targetId,'µA'],['估算 W',sized.w_um,'µm'],['gm/Id',r.gmid,'1/V'],['估算 gm',sized.gm*1e3,'mS'],['估算 ro',sized.ro===null?null:sized.ro*1e-3,'kΩ'],['估算 gds',sized.gds*1e6,'µS'],...['cgs','cgd','cds','cgg'].map(k=>['估算 '+k,sized[k]===null?null:sized[k]*1e15,'fF'])];
+      for(const [name,value,unit] of fields){
+        const cell=document.createElement('div');cell.className='value';
+        const label=document.createElement('small');label.textContent=name;
+        const number=document.createElement('strong');number.textContent=fmt(value);
+        const suffix=document.createElement('em');suffix.textContent=unit;
+        number.append(suffix);cell.append(label,number);target.append(cell);
+      }
+      $('readouts').append(target);
+    }
+    const reference=document.createElement('p');reference.className='solution-title';
+    reference.textContent=`缓存参考器件 · W = ${current.conditions.w_um} µm · 以下参数对应参考宽度`;
+    $('readouts').append(reference);
     const grid=document.createElement('div');grid.className='values';
     for(const k of ['gmid','id_w','vgs_abs_v','ro','gm','gds','gain','ft','cgs','cgd','cds','cgg','ids','vth','vdsat','region']){
       const m=metrics[k],cell=document.createElement('div');cell.className='value';const label=document.createElement('small');label.textContent=m[0];const val=document.createElement('strong');val.textContent=fmt(GmidCore.finite(r[k])?r[k]*m[2]:null);const unit=document.createElement('em');unit.textContent=m[1];val.append(unit);cell.append(label,val);grid.append(cell);
@@ -138,6 +160,7 @@ function query(e){
   });draw();
 }
 $('lookup').addEventListener('submit',query);
+$('target-id').addEventListener('input',()=>{$('readouts').replaceChildren();solutions=[];$('query-status').textContent='电流已更改，请重新查表。';draw();});
 $('query-key').addEventListener('change',()=>{$('query-value').value={gmid:15,id_w:50,vgs_abs_v:.65}[$('query-key').value];});
 function download(text,name,type){const url=URL.createObjectURL(new Blob([text],{type}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 $('export-svg').addEventListener('click',()=>{const svg=$('chart').querySelector('svg');if(svg)download(new XMLSerializer().serializeToString(svg),'gmid-curve.svg','image/svg+xml');});

@@ -61,7 +61,17 @@
     }
     return hits.sort((a,b)=>a.vgs_abs_v-b.vgs_abs_v);
   }
-  const api={finite, validate, lookup, selectCurves, curveCSV, extent};
+  function sizeForCurrent(row, referenceWidthUm, targetCurrentA) {
+    const referenceCurrent=Math.abs(row.ids);
+    if(!finite(referenceCurrent)||referenceCurrent<=1e-15||!finite(row.gmid)||!finite(targetCurrentA)||targetCurrentA<=0)return null;
+    const ratio=targetCurrentA/referenceCurrent;
+    const scaled={w_um:referenceWidthUm*ratio,gm:row.gmid*targetCurrentA,
+      gds:finite(row.gds)?row.gds*ratio:null,
+      ro:finite(row.gds)&&row.gds>0?1/(row.gds*ratio):null};
+    for(const key of ['cgs','cgd','cds','cgg'])scaled[key]=finite(row[key])?row[key]*ratio:null;
+    return scaled;
+  }
+  const api={sizeForCurrent,finite, validate, lookup, selectCurves, curveCSV, extent};
   if (typeof module !== 'undefined' && module.exports) module.exports=api;
   else root.GmidCore=api;
 })(typeof window !== 'undefined' ? window : globalThis);
