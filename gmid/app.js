@@ -64,7 +64,7 @@ function cascade(start=0){
   if(current){const c=current.conditions;$('conditions').textContent=`${c.device} · L ${c.l_um} µm · W ${c.w_um} µm · |VDS| ${c.vds_abs_v} V · 体偏置 ${c.body_reverse_v} V · ${c.corner} · ${c.temperature_c} °C`;}
   const selected=processes.get($('process').value);
   if(selected){
-    $('source').textContent=`${selected.source||'导入缓存'} / ${selected.model_revision||'版本未注明'}`;
+    $('source').textContent=`${selected.source||'导入缓存'} / ${selected.model_revision||'版本未注明'}${selected.model_notes?' · '+selected.model_notes:''}`;
     $('counts').textContent=`${selected.curves.length} 条曲线 · ${selected.curves.reduce((n,c)=>n+c.rows.length,0).toLocaleString()} 个扫描点`;
     $('date').textContent=selected.created_utc?`缓存生成于 ${selected.created_utc.slice(0,10)}`:'';
   }
@@ -143,4 +143,4 @@ function download(text,name,type){const url=URL.createObjectURL(new Blob([text],
 $('export-svg').addEventListener('click',()=>{const svg=$('chart').querySelector('svg');if(svg)download(new XMLSerializer().serializeToString(svg),'gmid-curve.svg','image/svg+xml');});
 $('export-csv').addEventListener('click',()=>{if(current)download(GmidCore.curveCSV(current),'gmid-current-curve.csv','text/csv;charset=utf-8');});
 $('import').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{load(JSON.parse(await file.text()));}catch(err){notice('导入失败：'+err.message);}e.target.value='';});
-try{if(window.GMID_DATA)load(window.GMID_DATA);else{draw();notice('未找到默认缓存。请先运行独立扫描脚本，或导入 dataset.json。');}}catch(err){notice('缓存加载失败：'+err.message);}
+try{if(window.GMID_DATASETS?.length){for(const data of window.GMID_DATASETS)load(data);if(processes.has('tsmcN65')){$('process').value='tsmcN65';cascade(1);}}else if(window.GMID_DATA)load(window.GMID_DATA);else{draw();notice('未找到默认缓存。请先运行独立扫描脚本，或导入 dataset.json。');}}catch(err){notice('缓存加载失败：'+err.message);}

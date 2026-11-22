@@ -38,6 +38,6 @@
 <details><summary>参数定义与使用说明</summary><p>gm/Id = |gm / ids|；ID/W = |ids| / W；ro = 1/gds；本征增益 = |gm|/gds；fT 估算 = |gm|/(2π Cgg)，不是 AC 测得的单位电流增益频率。显示参数对应缓存中的实际 W，不自动缩放宽度。</p><p>Cgs、Cgd、Cds、Cgg 为 Spectre 工作点输出的原始带符号电容矩阵项，保留符号；它们不是互易的独立二端电容。Cds 不等于 Cjd。对数轴会略去零值、负值和缺失值；电容图默认使用线性轴。</p><p>查表只在相同条件下的相邻 VGS 点间插值，不跨工艺角或偏置插值，也不外推。非单调曲线返回多个解。扫描包含非饱和区，请结合 region 与 VDSAT 判断设计工作区。</p></details>
 <footer>本地计算 · 本地缓存 · 无在线仿真依赖 <span id="date"></span></footer>
 </section></main>
-<script src="data/dataset.js"></script><script src="core.js"></script><script src="app.js"></script>
+<script src="data/dataset.js"></script><script src="data/tsmc18.js"></script><script src="data/tsmcN28.js"></script><script src="core.js"></script><script src="app.js"></script>
 </body></html>
 
