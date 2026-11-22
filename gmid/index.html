@@ -22,7 +22,13 @@
 <div id="notice" role="status" aria-live="polite"></div>
 <article class="chart-card">
 <div class="chart-head"><div><h2 id="plot-title">ID/W vs gm/Id</h2><p id="conditions" class="muted"></p></div><button id="export-svg" class="button secondary">导出 SVG</button></div>
-<div class="toolbar"><label>纵轴<select id="metric"></select></label><label>横轴<select id="xmetric"><option value="gmid">gm/Id [1/V]</option><option value="vgs_abs_v">|VGS| [V]</option><option value="id_w">ID/W [µA/µm]</option></select></label><label class="check"><input id="compare" type="checkbox"> 对比所有 L</label><label class="check"><input id="log" type="checkbox" checked> 对数纵轴</label></div>
+<div class="toolbar"><label>纵轴<select id="metric"></select></label><label>横轴<select id="xmetric"><option value="id_abs_ua" hidden>|ID| [µA]</option><option value="gmid">gm/Id [1/V]</option><option value="vgs_abs_v">|VGS| [V]</option><option value="id_w">ID/W [µA/µm]</option></select></label><label class="check"><input id="compare" type="checkbox"> 对比所有 L</label><label class="check"><input id="log" type="checkbox" checked> 对数纵轴</label></div>
+<div id="ro-controls" class="toolbar" hidden>
+<label>典型 gm/Id [1/V]<input id="ro-levels" type="text" value="5,10,15,20" style="display:block;width:100%;padding:10px;margin-top:7px"></label>
+<label>最小 |ID| [µA]<input id="ro-min" type="number" value="1" min="0" step="any"></label>
+<label>最大 |ID| [µA]<input id="ro-max" type="number" value="1000" min="0" step="any"></label>
+<p class="muted">固定各 gm/Id，改变 W 得到 ro–ID 估算曲线。仅绘制缓存覆盖的 gm/Id，多个交点分别显示。</p>
+</div>
 <div class="comparison-panel">
 <div class="comparison-actions"><button id="pin-curve" class="button primary">＋ 添加当前条件到对比</button><button id="clear-curves" class="button secondary">清空对比</button></div>
 <p class="muted">在左侧选择器件、工艺角和温度，再添加曲线。已添加的曲线会保留，最多 12 条。查表使用左侧当前条件。</p>

@@ -71,7 +71,20 @@
     for(const key of ['cgs','cgd','cds','cgg'])scaled[key]=finite(row[key])?row[key]*ratio:null;
     return scaled;
   }
-  const api={sizeForCurrent,finite, validate, lookup, selectCurves, curveCSV, extent};
+  function roCurrentFamilies(curve, levels, minimumUa, maximumUa) {
+    if(!finite(minimumUa)||!finite(maximumUa)||minimumUa<=0||maximumUa<=minimumUa)return [];
+    return levels.flatMap(level=>lookup(curve.rows,'gmid',level).flatMap((point,branch)=>{
+      if(!finite(point.gds)||point.gds<=0)return [];
+      const rows=[];
+      for(let i=0;i<=100;i++){
+        const idUa=minimumUa*Math.pow(maximumUa/minimumUa,i/100);
+        const sized=sizeForCurrent(point,curve.conditions.w_um,idUa*1e-6);
+        if(sized)rows.push({...point,...sized,id_abs_ua:idUa});
+      }
+      return [{...curve,rows,familyGmid:level,familyBranch:branch}];
+    }));
+  }
+  const api={roCurrentFamilies,sizeForCurrent,finite, validate, lookup, selectCurves, curveCSV, extent};
   if (typeof module !== 'undefined' && module.exports) module.exports=api;
   else root.GmidCore=api;
 })(typeof window !== 'undefined' ? window : globalThis);

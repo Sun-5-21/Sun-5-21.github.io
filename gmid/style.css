@@ -24,3 +24,5 @@
 .comparison-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 10px; font-size: 13px; line-height: 1.7; }
 .comparison-row span { overflow-wrap: anywhere; }
 .legend { justify-content: flex-start; }
+
+#ro-controls[hidden] { display: none; }

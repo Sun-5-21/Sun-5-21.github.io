@@ -1,7 +1,7 @@
 'use strict';
 const $ = id=>document.getElementById(id);
 const metrics = {
-  id_w:['ID/W','µA/µm',1], gmid:['gm/Id','1/V',1], gain:['gm/gds','V/V',1],
+  id_abs_ua:['|ID|','µA',1], id_w:['ID/W','µA/µm',1], gmid:['gm/Id','1/V',1], gain:['gm/gds','V/V',1],
   ro:['ro','kΩ',1e-3], ft:['fT 估算','GHz',1e-9],
   cgs:['Cgs · 原始矩阵项','fF',1e15], cgd:['Cgd · 原始矩阵项','fF',1e15],
   cds:['Cds · 原始矩阵项','fF',1e15], cgg:['Cgg','fF',1e15],
@@ -46,7 +46,7 @@ $('pin-curve').addEventListener('click',()=>{
 $('clear-curves').addEventListener('click',()=>{comparisonCurves=[];renderComparisons();draw();});
 const fmt=v=>!GmidCore.finite(v)?'—':v===0?'0':Math.abs(v)>=1e5||Math.abs(v)<.001?v.toExponential(3):Number(v.toPrecision(5)).toString();
 function option(value,text=value){const o=document.createElement('option');o.value=value;o.textContent=text;return o;}
-Object.entries(metrics).filter(([k])=>k!=='region').forEach(([k,v])=>$('metric').append(option(k,`${v[0]} [${v[1]}]`)));
+Object.entries(metrics).filter(([k])=>!['region','id_abs_ua'].includes(k)).forEach(([k,v])=>$('metric').append(option(k,`${v[0]} [${v[1]}]`)));
 function notice(message){$('notice').textContent=message;}
 function candidates(ignoreL=false){return GmidCore.selectCurves(dataset.curves,Object.fromEntries(keys.map(k=>[k,$(k).value])),ignoreL);}
 function cascade(start=0){
@@ -82,10 +82,23 @@ function svgEl(name,attrs={},text){const e=document.createElementNS('http://www.
 function draw(){
   const box=$('chart');box.replaceChildren();$('legend').replaceChildren();plotted=[];
   if(!current){const e=document.createElement('div');e.className='empty';e.textContent='请导入由独立仿真脚本生成的 dataset.json';box.append(e);return;}
-  const ykey=$('metric').value,xkey=$('xmetric').value,ym=metrics[ykey],xm=metrics[xkey],log=$('log').checked;
-  $('plot-title').textContent=`${ym[0]} vs ${xm[0]}`;
+  const ykey=$('metric').value;
+  const roMode=ykey==='ro';
+  $('ro-controls').hidden=!roMode;
+  $('xmetric').disabled=roMode;
+  if(roMode)$('xmetric').value='id_abs_ua';
+  else if($('xmetric').value==='id_abs_ua')$('xmetric').value='gmid';
+  const xkey=roMode?'id_abs_ua':$('xmetric').value,ym=metrics[ykey],xm=metrics[xkey],log=$('log').checked;
+  $('plot-title').textContent=`${ym[0]} vs ${xm[0]}${roMode?' · 固定 gm/Id 的宽度缩放估算':''}`;
   const baseCurves=$('compare').checked?candidates(true):[current];
-  const curves=[...new Map([...baseCurves,...comparisonCurves].map(c=>[curveIdentity(c),c])).values()];
+  let curves=[...new Map([...baseCurves,...comparisonCurves].map(c=>[curveIdentity(c),c])).values()];
+  if(roMode){
+    const levels=$('ro-levels').value.split(/[,，\s]+/).filter(Boolean).map(Number);
+    if(!levels.length||levels.some(x=>!Number.isFinite(x)||x<=0)||levels.length>8){box.textContent='请输入最多 8 个正数 gm/Id，用逗号分隔。';return;}
+    const min=Number($('ro-min').value),max=Number($('ro-max').value);
+    if(!(min>0&&max>min)){box.textContent='电流范围需满足 0 < 最小电流 < 最大电流。';return;}
+    curves=curves.flatMap(curve=>GmidCore.roCurrentFamilies(curve,[...new Set(levels)],min,max));
+  }
   const valid=r=>GmidCore.finite(r[xkey])&&GmidCore.finite(r[ykey])&&(!log||r[ykey]*ym[2]>0);
   const all=curves.flatMap(c=>c.rows.filter(valid));
   if(!all.length){const e=document.createElement('div');e.className='empty';e.textContent='此坐标设置没有有效数据。带符号电容请使用线性纵轴。';box.append(e);return;}
@@ -111,24 +124,27 @@ function draw(){
     c.rows.forEach(r=>{if(!valid(r)){pen=false;return;}const x=sx(r[xkey]*xm[2]),y=sy(yval(r));d+=`${pen?'L':'M'}${x.toFixed(2)},${y.toFixed(2)} `;pen=true;plotted.push({x,y,r,c});});
     svg.append(svgEl('path',{d,fill:'none',stroke:color,'stroke-width':c===current?2.8:1.8,'stroke-linejoin':'round'}));
     const legend=document.createElement('span');legend.style.setProperty('--color',color);const comparisonIndex=comparisonCurves.findIndex(curve=>curveIdentity(curve)===curveIdentity(c));
-    legend.textContent=c===current?'当前组合':comparisonIndex>=0?`对比组${comparisonIndex+1}`:`L = ${c.conditions.l_um} µm`;
+    const currentMatch=curveIdentity(c)===curveIdentity(current);
+    const group=currentMatch?'当前组合':comparisonIndex>=0?`对比组${comparisonIndex+1}`:`L = ${c.conditions.l_um} µm`;
+    legend.textContent=roMode?`${group} · gm/Id=${c.familyGmid}${c.familyBranch?' · 分支'+(c.familyBranch+1):''}`:group;
     legend.title=curveLabel(c);$('legend').append(legend);
   });
-  solutions.filter(valid).forEach(r=>svg.append(svgEl('circle',{cx:sx(r[xkey]*xm[2]),cy:sy(yval(r)),r:6,fill:'#fff',stroke:'#163f31','stroke-width':2.5})));
+  (roMode?[]:solutions).filter(valid).forEach(r=>svg.append(svgEl('circle',{cx:sx(r[xkey]*xm[2]),cy:sy(yval(r)),r:6,fill:'#fff',stroke:'#163f31','stroke-width':2.5})));
   const hoverDot=svgEl('circle',{r:4,fill:'#244e3a',visibility:'hidden'});svg.append(hoverDot);
-  svg.addEventListener('pointermove',e=>{const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;const pos=pt.matrixTransform(svg.getScreenCTM().inverse());let best=null,dist=Infinity;for(const p of plotted){const d=(p.x-pos.x)**2+(p.y-pos.y)**2;if(d<dist){dist=d;best=p;}}if(best){hoverDot.setAttribute('cx',best.x);hoverDot.setAttribute('cy',best.y);hoverDot.setAttribute('visibility','visible');$('hover').textContent=`${curveLabel(best.c)} · ${xm[0]} ${fmt(best.r[xkey]*xm[2])} ${xm[1]} · ${ym[0]} ${fmt(best.r[ykey]*ym[2])} ${ym[1]}`;}});
+  svg.addEventListener('pointermove',e=>{const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;const pos=pt.matrixTransform(svg.getScreenCTM().inverse());let best=null,dist=Infinity;for(const p of plotted){const d=(p.x-pos.x)**2+(p.y-pos.y)**2;if(d<dist){dist=d;best=p;}}if(best){hoverDot.setAttribute('cx',best.x);hoverDot.setAttribute('cy',best.y);hoverDot.setAttribute('visibility','visible');$('hover').textContent=`${curveLabel(best.c)}${roMode?` · gm/Id ${best.c.familyGmid} · 估算 W ${fmt(best.r.w_um)} µm`:""} · ${xm[0]} ${fmt(best.r[xkey]*xm[2])} ${xm[1]} · ${ym[0]} ${fmt(best.r[ykey]*ym[2])} ${ym[1]}`;}});
   svg.addEventListener('pointerleave',()=>hoverDot.setAttribute('visibility','hidden'));
   box.append(svg);
 }
+for(const id of ['ro-levels','ro-min','ro-max'])$(id).addEventListener('input',draw);
 for(const id of ['xmetric','compare','log'])$(id).addEventListener('change',draw);
 $('metric').addEventListener('change',()=>{$('log').checked=['id_w','ro','ft'].includes($('metric').value);draw();});
 function query(e){
   if(e)e.preventDefault();if(!current)return;
   const raw=$('query-value').value,target=raw.trim()===''?NaN:Number(raw);
-  $('readouts').replaceChildren();solutions=[];
   const targetId=Number($('target-id').value);
-  if(!GmidCore.finite(targetId)||targetId<=0){$('query-status').textContent='目标 |ID| 必须大于 0 µA。';draw();return;}
+  if(!GmidCore.finite(targetId)||targetId<=0){$('query-status').textContent='请输入大于 0 的目标电流，当前表格保留上次有效结果。';return;}
 
+  $('readouts').replaceChildren();solutions=[];
   try{solutions=GmidCore.lookup(current.rows,$('query-key').value,target);}catch(err){$('query-status').textContent=err.message;draw();return;}
   if(!solutions.length){const [min,max]=GmidCore.extent(current.rows,r=>r[$('query-key').value]);$('query-status').textContent=min!==null?`无可用交点；有效扫描范围 ${fmt(min)}–${fmt(max)}。未执行外推。`:'此参数没有有效扫描值。';draw();return;}
   $('query-status').textContent=`找到 ${solutions.length} 个工作点${solutions.length>1?'；曲线非单调，请根据 VGS 选择工作点':''}。插值结果是估算，精确设计请在目标偏置复核。`;
@@ -160,7 +176,7 @@ function query(e){
   });draw();
 }
 $('lookup').addEventListener('submit',query);
-$('target-id').addEventListener('input',()=>{$('readouts').replaceChildren();solutions=[];$('query-status').textContent='电流已更改，请重新查表。';draw();});
+$('target-id').addEventListener('input',()=>{if(current)query();});
 $('query-key').addEventListener('change',()=>{$('query-value').value={gmid:15,id_w:50,vgs_abs_v:.65}[$('query-key').value];});
 function download(text,name,type){const url=URL.createObjectURL(new Blob([text],{type}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 $('export-svg').addEventListener('click',()=>{const svg=$('chart').querySelector('svg');if(svg)download(new XMLSerializer().serializeToString(svg),'gmid-curve.svg','image/svg+xml');});
