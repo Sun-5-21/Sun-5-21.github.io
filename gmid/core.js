@@ -84,7 +84,32 @@
       return [{...curve,rows,familyGmid:level,familyBranch:branch}];
     }));
   }
-  const api={roCurrentFamilies,sizeForCurrent,finite, validate, lookup, selectCurves, curveCSV, extent};
+  function axisTicks(minimum, maximum, logarithmic=false) {
+    if(!finite(minimum)||!finite(maximum)||maximum<minimum)return null;
+    if(logarithmic){
+      if(minimum<=0)return null;
+      let low=Math.floor(Math.log10(minimum)),high=Math.ceil(Math.log10(maximum));
+      if(high===low)high=low+1;
+      const ticks=[];
+      const stride=Math.max(1,Math.ceil((high-low)/8));
+      for(let power=low;power<=high;power+=stride){
+        for(const factor of (high-low<=2?[1,2,5]:[1])){
+          const value=factor*10**power;
+          if(value<=10**high*(1+1e-10))ticks.push(value);
+        }
+      }
+      return {min:10**low,max:10**high,ticks};
+    }
+    const span=maximum-minimum || Math.abs(maximum)*.2 || 1;
+    const raw=span/5,magnitude=10**Math.floor(Math.log10(raw));
+    const step=[1,2,5,10].find(factor=>factor*magnitude>=raw)*magnitude;
+    let min=Math.floor(minimum/step)*step,max=Math.ceil(maximum/step)*step;
+    if(min===max){min-=step;max+=step;}
+    const ticks=[];
+    for(let i=0;i<=Math.round((max-min)/step);i++)ticks.push(Number((min+i*step).toPrecision(12)));
+    return {min,max,ticks};
+  }
+  const api={axisTicks,roCurrentFamilies,sizeForCurrent,finite, validate, lookup, selectCurves, curveCSV, extent};
   if (typeof module !== 'undefined' && module.exports) module.exports=api;
   else root.GmidCore=api;
 })(typeof window !== 'undefined' ? window : globalThis);

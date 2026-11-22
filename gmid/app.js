@@ -88,7 +88,7 @@ function draw(){
   $('xmetric').disabled=roMode;
   if(roMode)$('xmetric').value='id_abs_ua';
   else if($('xmetric').value==='id_abs_ua')$('xmetric').value='gmid';
-  const xkey=roMode?'id_abs_ua':$('xmetric').value,ym=metrics[ykey],xm=metrics[xkey],log=$('log').checked;
+  const xkey=roMode?'id_abs_ua':$('xmetric').value,ym=metrics[ykey],xm=metrics[xkey],log=$('yscale').value==='log',xlog=$('xscale').value==='log';
   $('plot-title').textContent=`${ym[0]} vs ${xm[0]}${roMode?' · 固定 gm/Id 的宽度缩放估算':''}`;
   const baseCurves=$('compare').checked?candidates(true):[current];
   let curves=[...new Map([...baseCurves,...comparisonCurves].map(c=>[curveIdentity(c),c])).values()];
@@ -99,42 +99,30 @@ function draw(){
     if(!(min>0&&max>min)){box.textContent='电流范围需满足 0 < 最小电流 < 最大电流。';return;}
     curves=curves.flatMap(curve=>GmidCore.roCurrentFamilies(curve,[...new Set(levels)],min,max));
   }
-  const valid=r=>GmidCore.finite(r[xkey])&&GmidCore.finite(r[ykey])&&(!log||r[ykey]*ym[2]>0);
+  const valid=r=>GmidCore.finite(r[xkey])&&GmidCore.finite(r[ykey])&&(!log||r[ykey]*ym[2]>0)&&(!xlog||r[xkey]*xm[2]>0);
   const all=curves.flatMap(c=>c.rows.filter(valid));
-  if(!all.length){const e=document.createElement('div');e.className='empty';e.textContent='此坐标设置没有有效数据。带符号电容请使用线性纵轴。';box.append(e);return;}
-  const yval=r=>log?Math.log10(r[ykey]*ym[2]):r[ykey]*ym[2];
-  let [xmin,xmax]=GmidCore.extent(all,r=>r[xkey]*xm[2]);
-  let [ymin,ymax]=GmidCore.extent(all,yval);
-  const xp=(xmax-xmin)*.035||1,yp=(ymax-ymin)*.07||1;xmin-=xp;xmax+=xp;ymin-=yp;ymax+=yp;
-  let xTicks=[];
-  if(roMode){
-    const minimum=Number($('ro-min').value),maximum=Number($('ro-max').value);
-    const rawStep=Math.max(1,(maximum-minimum)/5);
-    const magnitude=10**Math.floor(Math.log10(rawStep));
-    const step=Math.max(1,[1,2,5,10].find(value=>value*magnitude>=rawStep)*magnitude);
-    xmin=Math.max(0,Math.floor(minimum/step)*step);
-    xmax=Math.ceil(maximum/step)*step;
-    if(xmax<=xmin)xmax=xmin+step;
-    for(let tick=xmin;tick<=xmax+step*1e-9;tick+=step)xTicks.push(tick);
-  }else{
-    for(let i=0;i<=5;i++)xTicks.push(xmin+(xmax-xmin)*i/5);
-  }
+  if(!all.length){const e=document.createElement('div');e.className='empty';e.textContent='此坐标设置没有有效数据。对数坐标仅显示正值，可切换为线性坐标。';box.append(e);return;}
+  const yval=r=>r[ykey]*ym[2];
+  const [xlow,xhigh]=GmidCore.extent(all,r=>r[xkey]*xm[2]);
+  const [ylow,yhigh]=GmidCore.extent(all,yval);
+  const xa=GmidCore.axisTicks(xlow,xhigh,xlog),ya=GmidCore.axisTicks(ylow,yhigh,log);
+  if(!xa||!ya){box.textContent='当前坐标范围不可用。对数坐标需要正数。';return;}
   const W=940,H=370,left=85,right=22,top=23,bottom=57;
-  const sx=v=>left+(v-xmin)/(xmax-xmin)*(W-left-right),sy=v=>H-bottom-(v-ymin)/(ymax-ymin)*(H-top-bottom);
+  const tx=value=>xlog?Math.log10(value):value;
+  const ty=value=>log?Math.log10(value):value;
+  const sx=value=>left+(tx(value)-tx(xa.min))/(tx(xa.max)-tx(xa.min))*(W-left-right);
+  const sy=value=>H-bottom-(ty(value)-ty(ya.min))/(ty(ya.max)-ty(ya.min))*(H-top-bottom);
   const svg=svgEl('svg',{viewBox:`0 0 ${W} ${H}`,role:'img','aria-label':$('plot-title').textContent,xmlns:'http://www.w3.org/2000/svg'});
   svg.append(svgEl('rect',{width:W,height:H,fill:'white'}));
-  for(let i=0;i<=5;i++){
-    const x=xmin+(xmax-xmin)*i/5,y=ymin+(ymax-ymin)*i/5;
-
-    svg.append(svgEl('line',{x1:left,x2:W-right,y1:sy(y),y2:sy(y),stroke:'#edf1ec'}));
-
-    svg.append(svgEl('text',{x:left-12,y:sy(y)+4,'text-anchor':'end',fill:'#7a8980','font-size':11},fmt(log?10**y:y)));
+  for(const tick of ya.ticks){
+    svg.append(svgEl('line',{x1:left,x2:W-right,y1:sy(tick),y2:sy(tick),stroke:'#edf1ec'}));
+    svg.append(svgEl('text',{x:left-12,y:sy(tick)+4,'text-anchor':'end',fill:'#7a8980','font-size':11},fmt(tick)));
   }
-  for(const tick of xTicks){
+  for(const tick of xa.ticks){
     svg.append(svgEl('line',{x1:sx(tick),x2:sx(tick),y1:top,y2:H-bottom,stroke:'#edf1ec'}));
-    svg.append(svgEl('text',{x:sx(tick),y:H-bottom+23,'text-anchor':'middle',fill:'#7a8980','font-size':11},roMode?String(Math.round(tick)):fmt(tick)));
+    svg.append(svgEl('text',{x:sx(tick),y:H-bottom+23,'text-anchor':'middle',fill:'#7a8980','font-size':11},fmt(tick)));
   }
-  svg.append(svgEl('text',{x:(W+left-right)/2,y:H-9,'text-anchor':'middle',fill:'#60766b','font-size':12},`${xm[0]} [${xm[1]}]`));
+  svg.append(svgEl('text',{x:(W+left-right)/2,y:H-9,'text-anchor':'middle',fill:'#60766b','font-size':12},`${xm[0]} [${xm[1]}]${xlog?' · log':''}`));
   svg.append(svgEl('text',{transform:`translate(17 ${H/2}) rotate(-90)`,'text-anchor':'middle',fill:'#60766b','font-size':12},`${ym[0]} [${ym[1]}]${log?' · log':''}`));
   curves.forEach((c,index)=>{
     let d='',pen=false;const color=colors[index%colors.length];
@@ -153,8 +141,8 @@ function draw(){
   box.append(svg);
 }
 for(const id of ['ro-levels','ro-min','ro-max'])$(id).addEventListener('input',draw);
-for(const id of ['xmetric','compare','log'])$(id).addEventListener('change',draw);
-$('metric').addEventListener('change',()=>{$('log').checked=['id_w','ro','ft'].includes($('metric').value);draw();});
+for(const id of ['xmetric','compare','xscale','yscale'])$(id).addEventListener('change',draw);
+$('metric').addEventListener('change',()=>{if(['cgs','cgd','cds','ids'].includes($('metric').value))$('yscale').value='linear';draw();});
 function query(e){
   if(e)e.preventDefault();if(!current)return;
   const raw=$('query-value').value,target=raw.trim()===''?NaN:Number(raw);

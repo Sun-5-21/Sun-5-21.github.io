@@ -22,7 +22,7 @@
 <div id="notice" role="status" aria-live="polite"></div>
 <article class="chart-card">
 <div class="chart-head"><div><h2 id="plot-title">ID/W vs gm/Id</h2><p id="conditions" class="muted"></p></div><button id="export-svg" class="button secondary">导出 SVG</button></div>
-<div class="toolbar"><label>纵轴<select id="metric"></select></label><label>横轴<select id="xmetric"><option value="id_abs_ua" hidden>|ID| [µA]</option><option value="gmid">gm/Id [1/V]</option><option value="vgs_abs_v">|VGS| [V]</option><option value="id_w">ID/W [µA/µm]</option></select></label><label class="check"><input id="compare" type="checkbox"> 对比所有 L</label><label class="check"><input id="log" type="checkbox" checked> 对数纵轴</label></div>
+<div class="toolbar"><label>纵轴<select id="metric"></select></label><label>横轴<select id="xmetric"><option value="id_abs_ua" hidden>|ID| [µA]</option><option value="gmid">gm/Id [1/V]</option><option value="vgs_abs_v">|VGS| [V]</option><option value="id_w">ID/W [µA/µm]</option></select></label><label class="check"><input id="compare" type="checkbox"> 对比所有 L</label><label>横轴坐标<select id="xscale"><option value="linear">线性</option><option value="log">对数</option></select></label><label>纵轴坐标<select id="yscale"><option value="linear">线性</option><option value="log" selected>对数</option></select></label></div>
 <div id="ro-controls" class="toolbar" hidden>
 <label>典型 gm/Id [1/V]<input id="ro-levels" type="text" value="5,10,15,20" style="display:block;width:100%;padding:10px;margin-top:7px"></label>
 <label>最小 |ID| [µA]<input id="ro-min" type="number" value="1" min="0" step="any"></label>
