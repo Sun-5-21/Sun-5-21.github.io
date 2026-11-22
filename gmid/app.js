@@ -110,7 +110,7 @@ function draw(){
     let d='',pen=false;const color=colors[index%colors.length];
     c.rows.forEach(r=>{if(!valid(r)){pen=false;return;}const x=sx(r[xkey]*xm[2]),y=sy(yval(r));d+=`${pen?'L':'M'}${x.toFixed(2)},${y.toFixed(2)} `;pen=true;plotted.push({x,y,r,c});});
     svg.append(svgEl('path',{d,fill:'none',stroke:color,'stroke-width':c===current?2.8:1.8,'stroke-linejoin':'round'}));
-    const legend=document.createElement('span');legend.style.setProperty('--color',color);legend.textContent=curveLabel(c)+(c===current?' · 当前':'');$('legend').append(legend);
+    const legend=document.createElement('span');legend.style.setProperty('--color',color);legend.textContent=`对比组${index+1}`;legend.title=curveLabel(c);$('legend').append(legend);
   });
   solutions.filter(valid).forEach(r=>svg.append(svgEl('circle',{cx:sx(r[xkey]*xm[2]),cy:sy(yval(r)),r:6,fill:'#fff',stroke:'#163f31','stroke-width':2.5})));
   const hoverDot=svgEl('circle',{r:4,fill:'#244e3a',visibility:'hidden'});svg.append(hoverDot);
