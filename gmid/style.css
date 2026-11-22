@@ -18,3 +18,9 @@
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
 }
+
+.comparison-panel { margin-top: 18px; padding: 16px; background: #f5f9f5; border: 1px solid var(--line); border-radius: 9px; }
+.comparison-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.comparison-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 10px; font-size: 13px; line-height: 1.7; }
+.comparison-row span { overflow-wrap: anywhere; }
+.legend { justify-content: flex-start; }

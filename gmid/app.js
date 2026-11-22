@@ -12,6 +12,38 @@ const keys=['process','device','l_um','w_um','vds_abs_v','body_reverse_v','corne
 const colors=['#18795e','#cf8639','#6583b8','#a66b95','#7b9560','#b4685a'];
 let dataset=null, current=null, solutions=[], plotted=[];
 const processes=new Map();
+let comparisonCurves=[];
+function curveLabel(curve) {
+  const c=curve.conditions;
+  return `${c.process} · ${c.device} · L ${c.l_um} µm · W ${c.w_um} µm · |VDS| ${c.vds_abs_v} V · 体偏置 ${c.body_reverse_v} V · ${c.corner} · ${c.temperature_c} °C`;
+}
+function curveIdentity(curve) {
+  return JSON.stringify(keys.map(key=>curve.conditions[key]));
+}
+function renderComparisons() {
+  const list=$('comparison-list');
+  list.replaceChildren();
+  comparisonCurves.forEach((curve,index)=>{
+    const row=document.createElement('div');row.className='comparison-row';
+    const text=document.createElement('span');text.textContent=curveLabel(curve);
+    const remove=document.createElement('button');remove.className='button secondary';
+    remove.textContent='移除';remove.setAttribute('aria-label','移除 '+curveLabel(curve));
+    remove.addEventListener('click',()=>{comparisonCurves.splice(index,1);renderComparisons();draw();});
+    row.append(text,remove);list.append(row);
+  });
+  if(dataset){
+    const corners=[...new Set(dataset.curves.map(c=>c.conditions.corner))].join('、');
+    const temps=[...new Set(dataset.curves.map(c=>c.conditions.temperature_c))].join('、');
+    $('comparison-coverage').textContent=`当前数据覆盖工艺角 ${corners}，温度 ${temps} °C。导入包含更多条件的缓存后可添加相应曲线。`;
+  }
+}
+$('pin-curve').addEventListener('click',()=>{
+  if(!current)return;
+  if(comparisonCurves.some(c=>curveIdentity(c)===curveIdentity(current)))return;
+  if(comparisonCurves.length>=12){notice('最多添加 12 条对比曲线，请先移除部分曲线。');return;}
+  comparisonCurves.push(current);notice('');renderComparisons();draw();
+});
+$('clear-curves').addEventListener('click',()=>{comparisonCurves=[];renderComparisons();draw();});
 const fmt=v=>!GmidCore.finite(v)?'—':v===0?'0':Math.abs(v)>=1e5||Math.abs(v)<.001?v.toExponential(3):Number(v.toPrecision(5)).toString();
 function option(value,text=value){const o=document.createElement('option');o.value=value;o.textContent=text;return o;}
 Object.entries(metrics).filter(([k])=>k!=='region').forEach(([k,v])=>$('metric').append(option(k,`${v[0]} [${v[1]}]`)));
@@ -43,7 +75,8 @@ keys.forEach((k,i)=>$(k).addEventListener('change',()=>cascade(i+1)));
 function load(data){
   GmidCore.validate(data);processes.set(data.process,data);
   dataset={curves:[...processes.values()].flatMap(d=>d.curves)};
-  notice('');cascade();$('process').value=data.process;cascade(1);
+  comparisonCurves=comparisonCurves.filter(c=>c.conditions.process!==data.process);
+  notice('');cascade();$('process').value=data.process;cascade(1);renderComparisons();
 }
 function svgEl(name,attrs={},text){const e=document.createElementNS('http://www.w3.org/2000/svg',name);for(const [k,v] of Object.entries(attrs))e.setAttribute(k,v);if(text!==undefined)e.textContent=text;return e;}
 function draw(){
@@ -51,7 +84,8 @@ function draw(){
   if(!current){const e=document.createElement('div');e.className='empty';e.textContent='请导入由独立仿真脚本生成的 dataset.json';box.append(e);return;}
   const ykey=$('metric').value,xkey=$('xmetric').value,ym=metrics[ykey],xm=metrics[xkey],log=$('log').checked;
   $('plot-title').textContent=`${ym[0]} vs ${xm[0]}`;
-  const curves=$('compare').checked?candidates(true):[current];
+  const baseCurves=$('compare').checked?candidates(true):[current];
+  const curves=[...new Map([...baseCurves,...comparisonCurves].map(c=>[curveIdentity(c),c])).values()];
   const valid=r=>GmidCore.finite(r[xkey])&&GmidCore.finite(r[ykey])&&(!log||r[ykey]*ym[2]>0);
   const all=curves.flatMap(c=>c.rows.filter(valid));
   if(!all.length){const e=document.createElement('div');e.className='empty';e.textContent='此坐标设置没有有效数据。带符号电容请使用线性纵轴。';box.append(e);return;}
@@ -76,11 +110,11 @@ function draw(){
     let d='',pen=false;const color=colors[index%colors.length];
     c.rows.forEach(r=>{if(!valid(r)){pen=false;return;}const x=sx(r[xkey]*xm[2]),y=sy(yval(r));d+=`${pen?'L':'M'}${x.toFixed(2)},${y.toFixed(2)} `;pen=true;plotted.push({x,y,r,c});});
     svg.append(svgEl('path',{d,fill:'none',stroke:color,'stroke-width':c===current?2.8:1.8,'stroke-linejoin':'round'}));
-    const legend=document.createElement('span');legend.style.setProperty('--color',color);legend.textContent=`L = ${c.conditions.l_um} µm${c===current?' · 当前':''}`;$('legend').append(legend);
+    const legend=document.createElement('span');legend.style.setProperty('--color',color);legend.textContent=curveLabel(c)+(c===current?' · 当前':'');$('legend').append(legend);
   });
   solutions.filter(valid).forEach(r=>svg.append(svgEl('circle',{cx:sx(r[xkey]*xm[2]),cy:sy(yval(r)),r:6,fill:'#fff',stroke:'#163f31','stroke-width':2.5})));
   const hoverDot=svgEl('circle',{r:4,fill:'#244e3a',visibility:'hidden'});svg.append(hoverDot);
-  svg.addEventListener('pointermove',e=>{const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;const pos=pt.matrixTransform(svg.getScreenCTM().inverse());let best=null,dist=Infinity;for(const p of plotted){const d=(p.x-pos.x)**2+(p.y-pos.y)**2;if(d<dist){dist=d;best=p;}}if(best){hoverDot.setAttribute('cx',best.x);hoverDot.setAttribute('cy',best.y);hoverDot.setAttribute('visibility','visible');$('hover').textContent=`L ${best.c.conditions.l_um} µm · ${xm[0]} ${fmt(best.r[xkey]*xm[2])} ${xm[1]} · ${ym[0]} ${fmt(best.r[ykey]*ym[2])} ${ym[1]}`;}});
+  svg.addEventListener('pointermove',e=>{const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;const pos=pt.matrixTransform(svg.getScreenCTM().inverse());let best=null,dist=Infinity;for(const p of plotted){const d=(p.x-pos.x)**2+(p.y-pos.y)**2;if(d<dist){dist=d;best=p;}}if(best){hoverDot.setAttribute('cx',best.x);hoverDot.setAttribute('cy',best.y);hoverDot.setAttribute('visibility','visible');$('hover').textContent=`${curveLabel(best.c)} · ${xm[0]} ${fmt(best.r[xkey]*xm[2])} ${xm[1]} · ${ym[0]} ${fmt(best.r[ykey]*ym[2])} ${ym[1]}`;}});
   svg.addEventListener('pointerleave',()=>hoverDot.setAttribute('visibility','hidden'));
   box.append(svg);
 }

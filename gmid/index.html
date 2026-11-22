@@ -23,6 +23,11 @@
 <article class="chart-card">
 <div class="chart-head"><div><h2 id="plot-title">ID/W vs gm/Id</h2><p id="conditions" class="muted"></p></div><button id="export-svg" class="button secondary">导出 SVG</button></div>
 <div class="toolbar"><label>纵轴<select id="metric"></select></label><label>横轴<select id="xmetric"><option value="gmid">gm/Id [1/V]</option><option value="vgs_abs_v">|VGS| [V]</option><option value="id_w">ID/W [µA/µm]</option></select></label><label class="check"><input id="compare" type="checkbox"> 对比所有 L</label><label class="check"><input id="log" type="checkbox" checked> 对数纵轴</label></div>
+<div class="comparison-panel">
+<div class="comparison-actions"><button id="pin-curve" class="button primary">＋ 添加当前条件到对比</button><button id="clear-curves" class="button secondary">清空对比</button></div>
+<p class="muted">在左侧选择器件、工艺角和温度，再添加曲线。已添加的曲线会保留，最多 12 条。查表使用左侧当前条件。</p>
+<p id="comparison-coverage" class="muted"></p><div id="comparison-list"></div>
+</div>
 <div id="chart" class="chart" aria-label="器件特性曲线"></div><div id="legend" class="legend"></div>
 <div class="chart-foot"><span id="hover">移动到曲线上查看扫描点</span><span>实线：Spectre 扫描 · 圆点：查询工作点</span></div>
 </article>
