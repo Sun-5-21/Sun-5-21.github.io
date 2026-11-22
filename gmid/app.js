@@ -106,16 +106,33 @@ function draw(){
   let [xmin,xmax]=GmidCore.extent(all,r=>r[xkey]*xm[2]);
   let [ymin,ymax]=GmidCore.extent(all,yval);
   const xp=(xmax-xmin)*.035||1,yp=(ymax-ymin)*.07||1;xmin-=xp;xmax+=xp;ymin-=yp;ymax+=yp;
+  let xTicks=[];
+  if(roMode){
+    const minimum=Number($('ro-min').value),maximum=Number($('ro-max').value);
+    const rawStep=Math.max(1,(maximum-minimum)/5);
+    const magnitude=10**Math.floor(Math.log10(rawStep));
+    const step=Math.max(1,[1,2,5,10].find(value=>value*magnitude>=rawStep)*magnitude);
+    xmin=Math.max(0,Math.floor(minimum/step)*step);
+    xmax=Math.ceil(maximum/step)*step;
+    if(xmax<=xmin)xmax=xmin+step;
+    for(let tick=xmin;tick<=xmax+step*1e-9;tick+=step)xTicks.push(tick);
+  }else{
+    for(let i=0;i<=5;i++)xTicks.push(xmin+(xmax-xmin)*i/5);
+  }
   const W=940,H=370,left=85,right=22,top=23,bottom=57;
   const sx=v=>left+(v-xmin)/(xmax-xmin)*(W-left-right),sy=v=>H-bottom-(v-ymin)/(ymax-ymin)*(H-top-bottom);
   const svg=svgEl('svg',{viewBox:`0 0 ${W} ${H}`,role:'img','aria-label':$('plot-title').textContent,xmlns:'http://www.w3.org/2000/svg'});
   svg.append(svgEl('rect',{width:W,height:H,fill:'white'}));
   for(let i=0;i<=5;i++){
     const x=xmin+(xmax-xmin)*i/5,y=ymin+(ymax-ymin)*i/5;
-    svg.append(svgEl('line',{x1:sx(x),x2:sx(x),y1:top,y2:H-bottom,stroke:'#edf1ec'}));
+
     svg.append(svgEl('line',{x1:left,x2:W-right,y1:sy(y),y2:sy(y),stroke:'#edf1ec'}));
-    svg.append(svgEl('text',{x:sx(x),y:H-bottom+23,'text-anchor':'middle',fill:'#7a8980','font-size':11},fmt(x)));
+
     svg.append(svgEl('text',{x:left-12,y:sy(y)+4,'text-anchor':'end',fill:'#7a8980','font-size':11},fmt(log?10**y:y)));
+  }
+  for(const tick of xTicks){
+    svg.append(svgEl('line',{x1:sx(tick),x2:sx(tick),y1:top,y2:H-bottom,stroke:'#edf1ec'}));
+    svg.append(svgEl('text',{x:sx(tick),y:H-bottom+23,'text-anchor':'middle',fill:'#7a8980','font-size':11},roMode?String(Math.round(tick)):fmt(tick)));
   }
   svg.append(svgEl('text',{x:(W+left-right)/2,y:H-9,'text-anchor':'middle',fill:'#60766b','font-size':12},`${xm[0]} [${xm[1]}]`));
   svg.append(svgEl('text',{transform:`translate(17 ${H/2}) rotate(-90)`,'text-anchor':'middle',fill:'#60766b','font-size':12},`${ym[0]} [${ym[1]}]${log?' · log':''}`));
